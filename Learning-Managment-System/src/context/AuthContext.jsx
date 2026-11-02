@@ -1,175 +1,26 @@
-// // src/context/AuthContext.jsx
-// import { createContext, useContext, useState, useEffect } from 'react';
-
-// const AuthContext = createContext(null);
-
-// const DEFAULT_DEMO_USER = {
-//   id: 'usr-101',
-//   name: 'Hardik Gupta',
-//   email: 'hardik@learnova.edu',
-//   studentId: 'LN-2024-8842',
-//   role: 'Student',
-//   department: 'Computer Science & Engineering',
-//   university: 'Learnova University of Technology',
-//   semester: '5th Semester (Fall 2026)',
-//   bio: 'Undergraduate Computer Science student passionate about full-stack web architectures, distributed systems, and machine learning models.',
-//   avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
-//   joinedDate: 'August 2024',
-//   gpa: '3.88 / 4.0',
-// };
-
-// export function AuthProvider({ children }) {
-//   const [user, setUser] = useState(() => {
-//     try {
-//       const savedUser = localStorage.getItem('learnova_auth_user');
-//       if (savedUser) {
-//         return JSON.parse(savedUser);
-//       }
-//       return DEFAULT_DEMO_USER;
-//     } catch {
-//       return DEFAULT_DEMO_USER;
-//     }
-//   });
-
-//   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-//     try {
-//       const authFlag = localStorage.getItem('learnova_is_authenticated');
-//       return authFlag !== null ? JSON.parse(authFlag) : true; // default logged in for immediate smooth testing
-//     } catch {
-//       return true;
-//     }
-//   });
-
-//   useEffect(() => {
-//     if (user) {
-//       localStorage.setItem('learnova_auth_user', JSON.stringify(user));
-//       localStorage.setItem('learnova_is_authenticated', JSON.stringify(isAuthenticated));
-//     } else {
-//       localStorage.removeItem('learnova_auth_user');
-//       localStorage.setItem('learnova_is_authenticated', JSON.stringify(false));
-//     }
-//   }, [user, isAuthenticated]);
-
-//   const login = (email, password, rememberMe = true) => {
-//     // Validate credentials or accept demo
-//     const authenticatedUser = {
-//       ...DEFAULT_DEMO_USER,
-//       email: email || DEFAULT_DEMO_USER.email,
-//       name: email && email.includes('@') ? email.split('@')[0].replace('.', ' ') : DEFAULT_DEMO_USER.name,
-//     };
-//     setUser(authenticatedUser);
-//     setIsAuthenticated(true);
-//     if (rememberMe) {
-//       localStorage.setItem('learnova_remembered_email', email);
-//     } else {
-//       localStorage.removeItem('learnova_remembered_email');
-//     }
-//     return { success: true };
-//   };
-
-//   const register = (userData) => {
-//     const newUser = {
-//       ...DEFAULT_DEMO_USER,
-//       id: `usr-${Date.now()}`,
-//       name: userData.name,
-//       email: userData.email,
-//       department: userData.department || 'Computer Science & Engineering',
-//       studentId: `LN-2026-${Math.floor(1000 + Math.random() * 9000)}`,
-//       semester: '1st Semester (Fall 2026)',
-//       joinedDate: 'September 2026',
-//     };
-//     setUser(newUser);
-//     setIsAuthenticated(true);
-//     return { success: true };
-//   };
-
-//   const logout = () => {
-//     setIsAuthenticated(false);
-//     setUser(null);
-//   };
-
-//   const updateProfile = (updatedFields) => {
-//     setUser((prev) => {
-//       const updated = { ...prev, ...updatedFields };
-//       localStorage.setItem('learnova_auth_user', JSON.stringify(updated));
-//       return updated;
-//     });
-//     return { success: true };
-//   };
-
-//   const resetPassword = (email) => {
-//     // Demo password reset simulation
-//     return { success: true, message: `Password reset link sent to ${email}` };
-//   };
-
-//   return (
-//     <AuthContext.Provider
-//       value={{
-//         user,
-//         isAuthenticated,
-//         login,
-//         register,
-//         logout,
-//         updateProfile,
-//         resetPassword,
-//         defaultDemoUser: DEFAULT_DEMO_USER,
-//       }}
-//     >
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// }
-
-// export function useAuth() {
-//   const context = useContext(AuthContext);
-//   if (!context) {
-//     throw new Error('useAuth must be used within an AuthProvider');
-//   }
-//   return context;
-// }
-
-
-
-// src/context/AuthContext.jsx
-
-import {
+import React, {
   createContext,
   useContext,
-  useState,
   useEffect,
-} from 'react';
+  useState,
+} from "react";
 
 const AuthContext = createContext(null);
 
-const DEFAULT_DEMO_USER = {
-  id: 'usr-101',
-  name: 'Hardik Gupta',
-  email: 'hardik@learnova.edu',
-  studentId: 'LN-2024-8842',
-  role: 'Student',
-  department: 'Computer Science & Engineering',
-  university: 'Learnova University of Technology',
-  semester: '5th Semester (Fall 2026)',
-  bio: 'Undergraduate Computer Science student passionate about full-stack web architectures, distributed systems, and machine learning models.',
-  avatar:
-    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
-  joinedDate: 'August 2024',
-  gpa: '3.88 / 4.0',
+const ADMIN_USER = {
+  id: "admin-1",
+  name: "Admin",
+  email: "admin@learnova.edu",
+  password: "Admin@2026",
+  role: "Admin",
 };
 
-const USERS_KEY = 'learnova_registered_users';
-const SESSION_KEY = 'learnova_auth_user_v2';
-const AUTH_KEY = 'learnova_is_authenticated_v2';
-const DEMO_PASSWORD = 'Learnova2026!';
+const USERS_KEY = "learnova_registered_users";
+const SESSION_KEY = "learnova_user";
 
-// Read registered users from localStorage
-function readUsers() {
+function getUsers() {
   try {
-    const saved = JSON.parse(
-      localStorage.getItem(USERS_KEY) || '[]'
-    );
-
-    return Array.isArray(saved) ? saved : [];
+    return JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
   } catch {
     return [];
   }
@@ -178,235 +29,353 @@ function readUsers() {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
-      if (localStorage.getItem(AUTH_KEY) === 'true') {
-        const savedUser = localStorage.getItem(SESSION_KEY);
-        return savedUser ? JSON.parse(savedUser) : null;
-      }
+      return JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
     } catch {
-      // Ignore invalid session data
-    }
-
-    return null;
-  });
-
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    try {
-      return (
-        localStorage.getItem(AUTH_KEY) === 'true' &&
-        Boolean(localStorage.getItem(SESSION_KEY))
-      );
-    } catch {
-      return false;
+      return null;
     }
   });
 
-  // Save or clear the current session
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    () => Boolean(localStorage.getItem(SESSION_KEY))
+  );
+
   useEffect(() => {
-    if (user && isAuthenticated) {
-      localStorage.setItem(
-        SESSION_KEY,
-        JSON.stringify(user)
-      );
-
-      localStorage.setItem(AUTH_KEY, 'true');
+    if (user) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+      setIsAuthenticated(true);
     } else {
       localStorage.removeItem(SESSION_KEY);
-      localStorage.setItem(AUTH_KEY, 'false');
+      setIsAuthenticated(false);
     }
-  }, [user, isAuthenticated]);
+  }, [user]);
 
-  // LOGIN
-  const login = (identifier, password, rememberMe = true) => {
-    const normalized = String(identifier || '')
-      .trim()
-      .toLowerCase();
+  const login = (identifier, password, rememberMe = false, selectedRole = "Student") => {
+    const normalizedIdentifier = identifier.trim().toLowerCase();
+    const normalizedRole = selectedRole.toLowerCase();
 
-    // Default demo account
-    const isDemoLogin =
-      normalized === DEFAULT_DEMO_USER.email.toLowerCase() &&
-      password === DEMO_PASSWORD;
-
-    // Find a registered account and verify its password
-    const registeredUser = readUsers().find((item) => {
-      const emailMatches =
-        String(item.email || '')
-          .trim()
-          .toLowerCase() === normalized;
-
-      const phoneMatches =
-        Boolean(item.phone) &&
-        String(item.phone).replace(/\D/g, '') ===
-          String(identifier || '').replace(/\D/g, '');
-
-      return (
-        (emailMatches || phoneMatches) &&
-        item.password === password
-      );
-    });
-
-    // Reject incorrect credentials
-    if (!isDemoLogin && !registeredUser) {
+    if (!normalizedIdentifier || !password) {
       return {
         success: false,
-        message: 'Incorrect email/phone number or password.',
+        message: "Please enter your email/phone and password.",
       };
     }
 
-    // Never include the password in the authenticated user object
-    let authenticatedUser;
+    let matchedUser = null;
 
-    if (isDemoLogin) {
-      authenticatedUser = DEFAULT_DEMO_USER;
+    if (
+      normalizedIdentifier === ADMIN_USER.email &&
+      password === ADMIN_USER.password &&
+      normalizedRole === "admin"
+    ) {
+      matchedUser = ADMIN_USER;
     } else {
-      const { password: savedPassword, ...safeUser } =
-        registeredUser;
+      matchedUser = getUsers().find((account) => {
+        const emailMatches =
+          account.email?.toLowerCase() === normalizedIdentifier;
 
-      authenticatedUser = safeUser;
+        const phoneMatches =
+          account.phone && account.phone === normalizedIdentifier;
+
+        const passwordMatches = account.password === password;
+
+        const roleMatches =
+          account.role?.toLowerCase() === normalizedRole;
+
+        return (
+          (emailMatches || phoneMatches) &&
+          passwordMatches &&
+          roleMatches
+        );
+      });
     }
 
-    setUser(authenticatedUser);
-    setIsAuthenticated(true);
+    if (!matchedUser) {
+      return {
+        success: false,
+        message: "Invalid credentials or selected role.",
+      };
+    }
+
+    const loggedInUser = {
+      id: matchedUser.id,
+      name: matchedUser.name,
+      email: matchedUser.email || "",
+      phone: matchedUser.phone || "",
+      role: matchedUser.role,
+    };
+
+    setUser(loggedInUser);
 
     if (rememberMe) {
       localStorage.setItem(
-        'learnova_remembered_email',
-        String(identifier || '').trim()
+        SESSION_KEY,
+        JSON.stringify(loggedInUser)
       );
-    } else {
-      localStorage.removeItem('learnova_remembered_email');
     }
 
     return {
       success: true,
-      user: authenticatedUser,
+      user: loggedInUser,
     };
   };
 
-  // REGISTER
   const register = (userData) => {
-    const email = String(userData.email || '')
-      .trim()
-      .toLowerCase();
+    const users = getUsers();
 
-    const users = readUsers();
+    const email = userData.email?.trim().toLowerCase();
 
-    // Prevent duplicate accounts
-    const alreadyExists =
-      email === DEFAULT_DEMO_USER.email.toLowerCase() ||
-      users.some(
-        (item) =>
-          String(item.email || '').trim().toLowerCase() === email
-      );
-
-    if (alreadyExists) {
+    if (!email || !userData.password) {
       return {
         success: false,
-        message: 'An account with this email already exists.',
+        message: "Email and password are required.",
+      };
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailPattern.test(email)) {
+      return {
+        success: false,
+        message: "Please enter a valid email address.",
+      };
+    }
+
+    const existingUser = users.some(
+      (account) => account.email?.toLowerCase() === email
+    );
+
+    if (existingUser || email === ADMIN_USER.email) {
+      return {
+        success: false,
+        message: "An account with this email already exists.",
       };
     }
 
     const newUser = {
-      ...DEFAULT_DEMO_USER,
-      id: `usr-${Date.now()}`,
-      name: String(userData.name || '').trim(),
+      id: crypto.randomUUID(),
+      name: userData.name?.trim() || "Student",
       email,
-      department:
-        userData.department ||
-        'Computer Science & Engineering',
-      studentId: `LN-2026-${Math.floor(
-        1000 + Math.random() * 9000
-      )}`,
-      semester: '1st Semester (Fall 2026)',
-      joinedDate: 'October 2026',
-
-      // Local demo only; not suitable for production.
       password: userData.password,
+      role: "Student",
     };
 
-    localStorage.setItem(
-      USERS_KEY,
-      JSON.stringify([...users, newUser])
-    );
-
-    const { password: savedPassword, ...safeUser } = newUser;
-
-    setUser(safeUser);
-    setIsAuthenticated(true);
+    users.push(newUser);
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
 
     return {
       success: true,
-      user: safeUser,
+      user: newUser,
     };
   };
 
-  // LOGOUT
-  const logout = () => {
-    setIsAuthenticated(false);
-    setUser(null);
-  };
-
-  // UPDATE PROFILE
-  const updateProfile = (updatedFields) => {
-    setUser((prev) => {
-      if (!prev) return prev;
-
-      const updated = {
-        ...prev,
-        ...updatedFields,
-      };
-
-      localStorage.setItem(
-        SESSION_KEY,
-        JSON.stringify(updated)
-      );
-
-      return updated;
-    });
-
-    return { success: true };
-  };
-
-  // FORGOT PASSWORD
-  const resetPassword = (email) => {
-    const normalized = String(email || '')
-      .trim()
-      .toLowerCase();
-
-    const exists =
-      normalized === DEFAULT_DEMO_USER.email.toLowerCase() ||
-      readUsers().some(
-        (item) =>
-          String(item.email || '').trim().toLowerCase() ===
-          normalized
-      );
-
-    if (!exists) {
+  const createManagedUser = (data) => {
+    if (user?.role?.toLowerCase() !== "admin") {
       return {
         success: false,
-        message: 'No registered account was found for this email.',
+        message: "Only administrators can create managed accounts.",
       };
     }
 
+    const name = data.name?.trim();
+    const email = data.email?.trim().toLowerCase();
+    const password = data.password;
+    const role = data.role?.trim();
+
+    if (!name || !email || !password || !role) {
+      return {
+        success: false,
+        message: "Please fill in all required fields.",
+      };
+    }
+
+    if (!["Staff", "Parent"].includes(role)) {
+      return {
+        success: false,
+        message: "Only Staff and Parent accounts can be created here.",
+      };
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailPattern.test(email)) {
+      return {
+        success: false,
+        message: "Please enter a valid email address.",
+      };
+    }
+
+    if (password.length < 8) {
+      return {
+        success: false,
+        message: "Password must contain at least 8 characters.",
+      };
+    }
+
+    const users = getUsers();
+
+    const emailExists =
+      email === ADMIN_USER.email ||
+      users.some(
+        (account) => account.email?.toLowerCase() === email
+      );
+
+    if (emailExists) {
+      return {
+        success: false,
+        message: "An account with this email already exists.",
+      };
+    }
+
+    const newUser = {
+      id: crypto.randomUUID(),
+      name,
+      email,
+      password,
+      role,
+      createdAt: new Date().toISOString(),
+    };
+
+    users.push(newUser);
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+
     return {
       success: true,
-      message:
-        'Account found. Password reset email is not configured in this demo.',
+      user: {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+      },
+      message: `${role} account created successfully.`,
     };
   };
 
+  const listManagedUsers = () => {
+    if (user?.role?.toLowerCase() !== "admin") {
+      return [];
+    }
+
+    return getUsers()
+      .filter((account) =>
+        ["staff", "parent"].includes(account.role?.toLowerCase())
+      )
+      .map(({ password, ...account }) => account);
+  };
+
+  const deleteManagedUser = (id) => {
+    if (user?.role?.toLowerCase() !== "admin") {
+      return {
+        success: false,
+        message: "Only administrators can delete accounts.",
+      };
+    }
+
+    const users = getUsers();
+    const updatedUsers = users.filter(
+      (account) => account.id !== id
+    );
+
+    if (updatedUsers.length === users.length) {
+      return {
+        success: false,
+        message: "User not found.",
+      };
+    }
+
+    localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
+
+    return {
+      success: true,
+      message: "Account deleted successfully.",
+    };
+  };
+
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem(SESSION_KEY);
+  };
+
+  const updateProfile = (updates) => {
+    if (!user) return;
+
+    const updatedUser = {
+      ...user,
+      ...updates,
+    };
+
+    setUser(updatedUser);
+
+    if (user.id !== ADMIN_USER.id) {
+      const users = getUsers();
+
+      const updatedUsers = users.map((account) =>
+        account.id === user.id
+          ? { ...account, ...updates }
+          : account
+      );
+
+      localStorage.setItem(
+        USERS_KEY,
+        JSON.stringify(updatedUsers)
+      );
+    }
+  };
+
+  const resetPassword = (email, newPassword) => {
+    const normalizedEmail = email?.trim().toLowerCase();
+
+    if (!normalizedEmail || !newPassword) {
+      return {
+        success: false,
+        message: "Email and new password are required.",
+      };
+    }
+
+    if (normalizedEmail === ADMIN_USER.email) {
+      return {
+        success: false,
+        message: "Admin password cannot be reset through this form.",
+      };
+    }
+
+    const users = getUsers();
+    const index = users.findIndex(
+      (account) =>
+        account.email?.toLowerCase() === normalizedEmail
+    );
+
+    if (index === -1) {
+      return {
+        success: false,
+        message: "No account found with this email.",
+      };
+    }
+
+    users[index].password = newPassword;
+
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+
+    return {
+      success: true,
+      message: "Password updated successfully.",
+    };
+  };
+
+  const value = {
+    user,
+    isAuthenticated,
+    login,
+    register,
+    logout,
+    updateProfile,
+    resetPassword,
+    createManagedUser,
+    listManagedUsers,
+    deleteManagedUser,
+  };
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated,
-        login,
-        register,
-        logout,
-        updateProfile,
-        resetPassword,
-        defaultDemoUser: DEFAULT_DEMO_USER,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
@@ -416,10 +385,10 @@ export function useAuth() {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error(
-      'useAuth must be used within an AuthProvider'
-    );
+    throw new Error("useAuth must be used inside AuthProvider.");
   }
 
   return context;
 }
+
+export default AuthContext;
